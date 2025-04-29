@@ -3,7 +3,6 @@ import sqlite3
 import requests
 import pandas as pd
 import re
-import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from datetime import datetime
 import os
@@ -69,6 +68,48 @@ def save_vote(username: str, case_id: int, verdict: str) -> bool:
         return False
     except Exception as e:
         st.error(f"Error saving vote: {str(e)}")
+        return False
+
+def get_user_verdict(username: str, case_id: int) -> str:
+    """
+    Obtiene el veredicto actual de un usuario para un caso específico
+    
+    Args:
+        username: Nombre del usuario
+        case_id: ID del caso
+        
+    Returns:
+        str: El veredicto ('guilty' o 'innocent') o None si no ha votado
+    """
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT verdict FROM votes WHERE username = ? AND case_id = ?", (username, case_id))
+    result = c.fetchone()
+    return result[0] if result else None
+
+def update_vote(username: str, case_id: int, verdict: str) -> bool:
+    """
+    Actualiza un voto existente en la base de datos
+    
+    Args:
+        username: Nombre del usuario
+        case_id: ID del caso
+        verdict: Nuevo veredicto ('guilty' o 'innocent')
+        
+    Returns:
+        bool: True si se actualizó correctamente, False en caso contrario
+    """
+    conn = get_db_connection()
+    try:
+        c = conn.cursor()
+        c.execute(
+            "UPDATE votes SET verdict = ?, ts = ? WHERE username = ? AND case_id = ?",
+            (verdict, datetime.now(), username, case_id)
+        )
+        conn.commit()
+        return c.rowcount > 0  # True si se actualizó al menos un registro
+    except Exception as e:
+        st.error(f"Error al actualizar voto: {str(e)}")
         return False
 
 def get_all_votes() -> pd.DataFrame:
@@ -208,40 +249,57 @@ def render_case_view(cases):
         st.markdown(f"**Descripción:**\n{case['description']}")
         
         already_voted = case_id in voted_cases
+        current_verdict = None
         
-        # Botones de votación
+        # Obtener el veredicto actual si ya votó
+        if already_voted:
+            current_verdict = get_user_verdict(username, case_id)
+            st.info(f"Tu veredicto actual: **{current_verdict.upper()}**. Puedes cambiar tu decisión si lo deseas.")
+        
+        # Botones de votación (se resaltan según el veredicto actual)
         col1, col2 = st.columns(2)
         with col1:
             guilty_button = st.button(
                 "CULPABLE 🔴", 
-                disabled=already_voted,
                 use_container_width=True,
-                type="primary" if not already_voted else "secondary"
+                type="primary" if current_verdict == "guilty" else "secondary"
             )
             
         with col2:
             innocent_button = st.button(
                 "INOCENTE 🟢", 
-                disabled=already_voted,
                 use_container_width=True,
-                type="primary" if not already_voted else "secondary"
+                type="primary" if current_verdict == "innocent" else "secondary"
             )
             
-        if already_voted:
-            st.info("Ya has votado en este caso")
-            
-        # Procesar voto
+        # Procesar voto nuevo o actualización
         if guilty_button:
-            if save_vote(username, case_id, "guilty"):
-                st.session_state["voted_cases"].add(case_id)
-                st.success("Voto registrado: CULPABLE")
-                st.rerun()
+            if already_voted:
+                if current_verdict != "guilty":
+                    if update_vote(username, case_id, "guilty"):
+                        st.success("Voto actualizado: CULPABLE")
+                        st.rerun()
+                    else:
+                        st.error("No se pudo actualizar el voto")
+            else:
+                if save_vote(username, case_id, "guilty"):
+                    st.session_state["voted_cases"].add(case_id)
+                    st.success("Voto registrado: CULPABLE")
+                    st.rerun()
             
         if innocent_button:
-            if save_vote(username, case_id, "innocent"):
-                st.session_state["voted_cases"].add(case_id)
-                st.success("Voto registrado: INOCENTE")
-                st.rerun()
+            if already_voted:
+                if current_verdict != "innocent":
+                    if update_vote(username, case_id, "innocent"):
+                        st.success("Voto actualizado: INOCENTE")
+                        st.rerun()
+                    else:
+                        st.error("No se pudo actualizar el voto")
+            else:
+                if save_vote(username, case_id, "innocent"):
+                    st.session_state["voted_cases"].add(case_id)
+                    st.success("Voto registrado: INOCENTE")
+                    st.rerun()
         
         # Navegación entre casos
         st.markdown("---")
@@ -273,7 +331,6 @@ def render_case_view(cases):
     
     if voted_count == total_cases:
         st.success("🎉 ¡Gracias por votar en todos los casos! Espera a que el instructor comparta los resultados.")
-
 def render_admin_view(cases):
     st.title("⚖️ Panel de Administración")
     
