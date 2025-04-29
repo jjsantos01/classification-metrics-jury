@@ -1,0 +1,32 @@
+[
+    {
+      "id": 1,
+      "image": "https://images.unsplash.com/photo-1531384441138-2736e62e0919?q=80&w=400",
+      "description": "El acusado, Juan García, fue detenido por robo a una tienda de conveniencia. Las cámaras de seguridad capturaron a alguien con ropa similar, pero la imagen es borrosa. Un testigo afirma haberlo visto cerca del lugar, pero no puede confirmar con total seguridad que él cometió el robo.",
+      "ground_truth": "innocent"
+    },
+    {
+      "id": 2,
+      "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=400",
+      "description": "La acusada, María Rodríguez, es sospechosa de fraude informático. Se encontraron transferencias bancarias sospechosas desde su computadora personal, pero ella alega que su equipo fue hackeado. Expertos forenses confirmaron signos de intrusión remota en el sistema.",
+      "ground_truth": "innocent"
+    },
+    {
+      "id": 3,
+      "image": "https://images.unsplash.com/photo-1613395077842-95588124b8cb?q=80&w=400",
+      "description": "Carlos Martínez está acusado de conducir bajo influencia del alcohol. El alcoholímetro marcó positivo y los oficiales reportaron comportamiento errático. Sin embargo, una prueba de sangre realizada dos horas después mostró niveles por debajo del límite legal. El acusado alega que el alcoholímetro estaba defectuoso.",
+      "ground_truth": "guilty"
+    },
+    {
+      "id": 4,
+      "image": "https://images.unsplash.com/photo-1573165231977-3f0e27806045?q=80&w=400",
+      "description": "Ana López está acusada de plagio académico. Su tesis doctoral contiene párrafos idénticos a un artículo publicado años antes. Ella argumenta que fue un error de citación y no una acción deliberada, pero varios expertos señalan que las similitudes son extensas y sistemáticas.",
+      "ground_truth": "guilty"
+    },
+    {
+      "id": 5,
+      "image": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?q=80&w=400",
+      "description": "Patricia Hernández está acusada de evasión fiscal. La fiscalía argumenta que ocultó ingresos por valor de $50,000 durante tres años consecutivos. Su contador testifica que fue un error de cálculo y que todos los ingresos estaban documentados en registros auxiliares que no se presentaron inicialmente.",
+      "ground_truth": "guilty"
+    }
+  ]
