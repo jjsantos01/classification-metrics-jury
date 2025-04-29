@@ -276,7 +276,6 @@ def render_case_view(cases):
 
 def render_admin_view(cases):
     st.title("⚖️ Panel de Administración")
-    st.sidebar.markdown("## Opciones de Administrador")
     
     votes_df = get_all_votes()
     
@@ -284,8 +283,11 @@ def render_admin_view(cases):
         st.warning("No hay votos registrados aún")
         return
     
-    # Configuración del umbral
-    threshold = st.sidebar.slider(
+    # Mostrar resultados por caso primero
+    st.markdown("## Resultados de Votación por Caso")
+    
+    # Configuración del umbral en la parte superior
+    threshold = st.slider(
         "Umbral para veredicto de Culpable", 
         min_value=0.0, 
         max_value=1.0, 
@@ -296,61 +298,6 @@ def render_admin_view(cases):
     # Calcular métricas
     results = confusion_components(votes_df, threshold)
     case_metrics = results['case_metrics']
-    
-    # Mostrar métricas globales
-    st.sidebar.markdown("### Métricas Globales")
-    col1, col2 = st.sidebar.columns(2)
-    col1.metric("Accuracy", f"{results['accuracy']:.2f}")
-    col2.metric("Precision", f"{results['precision']:.2f}")
-    col1.metric("Recall", f"{results['recall']:.2f}")
-    col2.metric("F1 Score", f"{results['f1']:.2f}")
-    
-    # Opciones de administración
-    st.sidebar.markdown("### Herramientas")
-    if st.sidebar.button("Descargar votes.db"):
-        with open('votes.db', 'rb') as f:
-            bytes_data = f.read()
-        st.sidebar.download_button(
-            label="Descargar archivo votes.db",
-            data=bytes_data,
-            file_name="votes.db",
-            mime="application/octet-stream"
-        )
-    
-    # Manejo del reset de votos con estados
-    st.sidebar.markdown("### Peligro")
-    
-    # Inicializar estado para el proceso de reset
-    if "reset_step" not in st.session_state:
-        st.session_state["reset_step"] = 0
-    
-    # Paso 1: Mostrar botón inicial
-    if st.session_state["reset_step"] == 0:
-        if st.sidebar.button("Reiniciar Todos los Votos"):
-            st.session_state["reset_step"] = 1
-            st.rerun()
-    
-    # Paso 2: Mostrar checkbox de confirmación
-    elif st.session_state["reset_step"] == 1:
-        st.sidebar.warning("¡Esta acción eliminará todos los votos!")
-        confirm = st.sidebar.checkbox("Confirmo que quiero eliminar TODOS los votos")
-        
-        col1, col2 = st.sidebar.columns(2)
-        with col1:
-            if st.button("Cancelar"):
-                st.session_state["reset_step"] = 0
-                st.rerun()
-        
-        with col2:
-            if st.button("SÍ, eliminar todo", type="primary", disabled=not confirm):
-                if confirm:
-                    reset_all_votes()
-                    st.session_state["reset_step"] = 0
-                    st.sidebar.success("Todos los votos han sido reiniciados")
-                    st.rerun()
-    
-    # Mostrar resultados por caso
-    st.markdown("## Resultados de Votación por Caso")
     
     case_dict = {case['id']: case for case in cases}
     
@@ -380,10 +327,62 @@ def render_admin_view(cases):
                     'Culpable': [metrics['guilty_votes']],
                     'Inocente': [metrics['total_votes'] - metrics['guilty_votes']]
                 })
-                
-    st.markdown("### Datos Detallados")        
-    if st.checkbox("Mostrar datos crudos de votos"):
-        st.dataframe(votes_df)
+    
+    # Ahora mostramos las métricas globales y herramientas debajo
+    st.markdown("---")
+    st.markdown("## Panel de Control")
+    
+    # Mostrar métricas globales
+    st.markdown("### Métricas Globales")
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Accuracy", f"{results['accuracy']:.2f}")
+    col2.metric("Precision", f"{results['precision']:.2f}")
+    col3.metric("Recall", f"{results['recall']:.2f}")
+    col4.metric("F1 Score", f"{results['f1']:.2f}")
+    
+    # Opciones de administración
+    st.markdown("### Herramientas de Administración")
+    if st.button("Descargar votes.db"):
+        with open('votes.db', 'rb') as f:
+            bytes_data = f.read()
+        st.download_button(
+            label="Descargar archivo votes.db",
+            data=bytes_data,
+            file_name="votes.db",
+            mime="application/octet-stream"
+        )
+    
+    # Manejo del reset de votos con estados
+    st.markdown("### Zona de Peligro")
+    
+    # Inicializar estado para el proceso de reset
+    if "reset_step" not in st.session_state:
+        st.session_state["reset_step"] = 0
+    
+    # Paso 1: Mostrar botón inicial
+    if st.session_state["reset_step"] == 0:
+        if st.button("Reiniciar Todos los Votos"):
+            st.session_state["reset_step"] = 1
+            st.rerun()
+    
+    # Paso 2: Mostrar checkbox de confirmación
+    elif st.session_state["reset_step"] == 1:
+        st.warning("¡Esta acción eliminará todos los votos!")
+        confirm = st.checkbox("Confirmo que quiero eliminar TODOS los votos")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Cancelar"):
+                st.session_state["reset_step"] = 0
+                st.rerun()
+        
+        with col2:
+            if st.button("SÍ, eliminar todo", type="primary", disabled=not confirm):
+                if confirm:
+                    reset_all_votes()
+                    st.session_state["reset_step"] = 0
+                    st.success("Todos los votos han sido reiniciados")
+                    st.rerun()
 
 def main():
     # Inicializar estado de sesión
@@ -421,20 +420,19 @@ def main():
     # Cargar casos
     cases = load_cases()
     
-    # Botón de cerrar sesión
-    if st.session_state["username"]:
-        if st.sidebar.button("Cerrar Sesión"):
+    # Renderizar vista apropiada
+    if not st.session_state["username"]:
+        render_login_view()
+    else:
+        # Botón de cerrar sesión en la parte superior
+        if st.button("Cerrar Sesión", key="logout_button"):
             st.session_state["username"] = None
             st.session_state["current_case"] = 0
             st.session_state["voted_cases"] = set()
             st.session_state["admin_logged"] = False
             st.query_params.clear()
             st.rerun()
-    
-    # Renderizar vista apropiada
-    if not st.session_state["username"]:
-        render_login_view()
-    else:
+            
         if st.session_state["admin_logged"]:
             render_admin_view(cases)
         else:
