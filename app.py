@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from datetime import datetime
 import os
-import io
+from utils import matrix_html
 
 # Page configuration
 st.set_page_config(
@@ -339,6 +339,26 @@ def render_admin_view(cases):
     col2.metric("Precision", f"{results['precision']:.2f}")
     col3.metric("Recall", f"{results['recall']:.2f}")
     col4.metric("F1 Score", f"{results['f1']:.2f}")
+    
+    # Matriz de confusión
+    st.markdown("### Matriz de Confusión")
+    
+    # Calcular los valores de la matriz
+    case_metrics = results['case_metrics']
+    
+    # Mapeo para cálculos de la matriz
+    y_true = case_metrics['ground_truth'].map({'guilty': 1, 'innocent': 0}).values
+    y_pred = case_metrics['prediction'].map({'guilty': 1, 'innocent': 0}).values
+    
+    # Calcular componentes de la matriz de confusión
+    TP = sum((y_true == 1) & (y_pred == 1))
+    FP = sum((y_true == 0) & (y_pred == 1))
+    FN = sum((y_true == 1) & (y_pred == 0))
+    TN = sum((y_true == 0) & (y_pred == 0))
+    
+    # Usar una tabla HTML para la matriz de confusión (más adecuada para este tipo de visualización)
+    
+    st.markdown(matrix_html.format(TP=TP, FP=FP, FN=FN, TN=TN), unsafe_allow_html=True)
     
     # Opciones de administración
     st.markdown("### Herramientas de Administración")
