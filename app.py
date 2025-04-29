@@ -317,13 +317,37 @@ def render_admin_view(cases):
             mime="application/octet-stream"
         )
     
+    # Manejo del reset de votos con estados
     st.sidebar.markdown("### Peligro")
-    if st.sidebar.button("Reiniciar Todos los Votos"):
-        confirm = st.sidebar.checkbox("Confirmo que quiero eliminar TODOS los votos")
-        if confirm and st.sidebar.button("SÍ, eliminar todo", type="primary"):
-            reset_all_votes()
-            st.sidebar.success("Todos los votos han sido reiniciados")
+    
+    # Inicializar estado para el proceso de reset
+    if "reset_step" not in st.session_state:
+        st.session_state["reset_step"] = 0
+    
+    # Paso 1: Mostrar botón inicial
+    if st.session_state["reset_step"] == 0:
+        if st.sidebar.button("Reiniciar Todos los Votos"):
+            st.session_state["reset_step"] = 1
             st.rerun()
+    
+    # Paso 2: Mostrar checkbox de confirmación
+    elif st.session_state["reset_step"] == 1:
+        st.sidebar.warning("¡Esta acción eliminará todos los votos!")
+        confirm = st.sidebar.checkbox("Confirmo que quiero eliminar TODOS los votos")
+        
+        col1, col2 = st.sidebar.columns(2)
+        with col1:
+            if st.button("Cancelar"):
+                st.session_state["reset_step"] = 0
+                st.rerun()
+        
+        with col2:
+            if st.button("SÍ, eliminar todo", type="primary", disabled=not confirm):
+                if confirm:
+                    reset_all_votes()
+                    st.session_state["reset_step"] = 0
+                    st.sidebar.success("Todos los votos han sido reiniciados")
+                    st.rerun()
     
     # Mostrar resultados por caso
     st.markdown("## Resultados de Votación por Caso")
