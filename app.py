@@ -24,7 +24,7 @@ def main():
             
             # Verificar admin
             if username.lower() == "admin" and "admin_pwd" in st.query_params:
-                admin_pwd = os.environ.get("ADMIN_PWD", st.secrets.get("ADMIN_PWD", ""))
+                admin_pwd = os.environ["ADMIN_PWD"]
                 if st.query_params["admin_pwd"] == admin_pwd:
                     st.session_state["admin_logged"] = True
         else:
