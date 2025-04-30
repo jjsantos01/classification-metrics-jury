@@ -42,7 +42,7 @@ def get_db_connection():
 @st.cache_data(ttl=3600)
 def load_cases():
     try:
-        cases_url = st.secrets.get("CASES_URL", "https://example.com/cases.json")
+        cases_url = os.environ["CASES_URL"]
         response = requests.get(cases_url)
         response.raise_for_status()
         return response.json()

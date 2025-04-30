@@ -44,7 +44,7 @@ def render_login_view():
                 return
                 
             if username.lower() == "admin":
-                admin_pwd = os.environ.get("ADMIN_PWD", st.secrets.get("ADMIN_PWD", ""))
+                admin_pwd = os.environ["ADMIN_PWD"]
                 if password != admin_pwd:
                     st.error("Contraseña de administrador incorrecta")
                     return
