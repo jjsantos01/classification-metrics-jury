@@ -76,8 +76,8 @@ def main():
     # Footer
     st.markdown("---")
     st.markdown(
-        "Creado para Bootcamp de Data Science | "
-        "[GitHub Repo](https://github.com/yourusername/interactive-judgment-app)"
+        "Creado por [@jjsantoso](https://twitter.com/jjsantoso) | "
+        "[GitHub Repo](https://github.com/jjsantos01/classification-metrics-jury)"
     )
 
 if __name__ == "__main__":
