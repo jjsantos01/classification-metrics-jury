@@ -14,7 +14,7 @@ from utils import (
 def render_login_view():
     """Renderiza la vista de inicio de sesión"""
     # Display header
-    st.title("⚖️ Interactive Judgment App")
+    st.title("⚖️ Juicio Interactivo")
     st.markdown("### Bienvenido! Ingresa tu nombre de usuario para comenzar")
     
     # Get username from query params if available
@@ -64,7 +64,7 @@ def render_login_view():
 def render_case_view(cases):
     """Renderiza la vista para votar en casos"""
     if not cases:
-        st.title("⚖️ Interactive Judgment App")
+        st.title("⚖️ Juicio Interactivo")
         st.error("No hay casos disponibles. Intenta más tarde.")
         return
         
@@ -72,7 +72,7 @@ def render_case_view(cases):
     current_case_idx = st.session_state["current_case"]
     voted_cases = st.session_state["voted_cases"]
     
-    st.title("⚖️ Interactive Judgment App")
+    st.title("⚖️ Juicio Interactivo")
     st.markdown(f"**Usuario:** {username}")
     
     total_cases = len(cases)

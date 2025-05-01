@@ -7,7 +7,7 @@ from views import render_login_view, render_case_view, render_admin_view, render
 
 # Page configuration
 st.set_page_config(
-    page_title="Interactive Judgment App",
+    page_title="Juicio Interactivo",
     page_icon="⚖️",
     layout="centered",
     initial_sidebar_state="collapsed"
